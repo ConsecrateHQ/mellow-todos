@@ -5,6 +5,11 @@ from typing import Dict, Any, List, Optional, Tuple
 import urllib.parse
 import pytz
 import re
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class FirebaseOperationResult:
     def __init__(self, success: bool, message: str, data: Any = None):
@@ -19,8 +24,16 @@ def initialize_firebase():
         firebase_admin.get_app()
         print("🔥 Firebase already initialized")
     except ValueError:
+        # Get Firebase credentials path from environment variable
+        credentials_path = os.getenv('FIREBASE_CREDENTIALS_PATH')
+        if not credentials_path:
+            raise ValueError("FIREBASE_CREDENTIALS_PATH environment variable not set")
+        
+        if not os.path.exists(credentials_path):
+            raise FileNotFoundError(f"Firebase credentials file not found: {credentials_path}")
+        
         # Initialize Firebase Admin SDK with service account key
-        cred = credentials.Certificate("mellow-4401e-firebase-adminsdk-fbsvc-7dea04f22e.json")
+        cred = credentials.Certificate(credentials_path)
         firebase_admin.initialize_app(cred)
         print("🔥 Firebase Admin SDK initialized successfully!")
 
